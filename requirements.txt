@@ -1,0 +1,12 @@
+torch>=2.0.0
+transformers>=4.35.0
+triton>=3.4.0
+accelerate>=0.20.0
+bitsandbytes>=0.41.0
+langchain-huggingface>=0.1.0
+langchain-core>=0.0.37
+pydantic>=2.12.2
+json5>=0.9.14
+regex>=2023.8.8
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0

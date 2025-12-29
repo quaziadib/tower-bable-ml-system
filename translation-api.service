@@ -1,0 +1,20 @@
+[Unit]
+Description=Translation API Service
+After=network.target
+
+[Service]
+Type=simple
+User=adib
+Group=adib
+WorkingDirectory=/home/adib/tower-bable-ml-system
+Environment="PATH=/home/adib/tower-bable-ml-system/venv/bin"
+ExecStart=/home/adib/tower-bable-ml-system/venv/bin/python /home/adib/tower-bable-ml-system/api.py
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=append:/var/log/translation-api/output.log
+StandardError=append:/var/log/translation-api/error.log
+
+[Install]
+WantedBy=multi-user.target
