@@ -83,13 +83,6 @@ uvicorn api:app --reload --host 0.0.0.0 --port 9000
 
 ## Production Build
 
-### Frontend
-```bash
-cd frontend
-npm run build
-npm start
-```
-
 ## Notes
 
 - The model will be downloaded automatically on first run (approximately 15GB)
