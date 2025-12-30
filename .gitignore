@@ -24,7 +24,7 @@ share/python-wheels/
 MANIFEST
 Babel-9B-Chat/
 .claude/
-CLAUDE.md/
+CLAUDE.md
 test.py
 
 
