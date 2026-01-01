@@ -26,6 +26,7 @@ Babel-9B-Chat/
 .claude/
 CLAUDE.md
 test.py
+final_model/
 
 
 # Virtual Environment

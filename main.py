@@ -1,4 +1,5 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
 import torch
 from typing import Optional, List, Any, Mapping
 
@@ -90,16 +91,30 @@ def validate_output(json_obj: dict) -> TranslationOutput:
 # MODEL CONFIGURATION
 # -------------------------------
 class TranslationModel:
-    """Wrapper for HuggingFace transformers model"""
-    def __init__(self, model_name: str, device: str = "cuda"):
+    """Wrapper for HuggingFace transformers model with optional PEFT adapter support"""
+    def __init__(self, model_name: str, device: str = "cuda", adapter_path: Optional[str] = None):
         self.model_name = model_name
         self.device = device
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.adapter_path = adapter_path
+
+        # Load tokenizer (from adapter if available, else base model)
+        tokenizer_path = adapter_path if adapter_path else model_name
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
+
+        # Load base model
+        print(f"Loading base model: {model_name}")
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype=torch.float16,
             device_map="auto"
         )
+
+        # Load PEFT adapter if provided
+        if adapter_path and os.path.exists(adapter_path):
+            print(f"Loading PEFT adapter from: {adapter_path}")
+            self.model = PeftModel.from_pretrained(self.model, adapter_path)
+            print("✓ PEFT adapter loaded successfully!")
+
         self.model.eval()
 
     def generate(self, prompt: str, max_tokens: int = 2048, temperature: float = 0.0, stop: Optional[List[str]] = None) -> str:
@@ -127,12 +142,17 @@ class TranslationModel:
 # -------------------------------
 # MODEL LOADING WITH TRANSFORMERS
 # -------------------------------
-MODEL_NAME = "Babel-9B-Chat"
+BASE_MODEL = "Babel-9B-Chat"
+ADAPTER_PATH = "final_model"  # QLoRA fine-tuned adapter
 
 print("Loading model with transformers...")
 
-# Load model
-llm = TranslationModel(MODEL_NAME, device="cuda" if torch.cuda.is_available() else "cpu")
+# Load base model with PEFT adapter
+llm = TranslationModel(
+    model_name=BASE_MODEL,
+    device="cuda" if torch.cuda.is_available() else "cpu",
+    adapter_path=ADAPTER_PATH if os.path.exists(ADAPTER_PATH) else None
+)
 
 print("✓ Model loaded successfully!")
 
@@ -232,12 +252,14 @@ def translate(text: str, src_lang: str, tgt_lang: str) -> TranslationOutput:
 # -------------------------------
 # DEMO
 # -------------------------------
+import time
 if __name__ == "__main__":
     test_cases = [
         ("The Bishop of Ramsbury was an episcopal title used by medieval English-Catholic diocesan bishops in the Anglo-Saxon English church. The title takes its name from the village of Ramsbury in Wiltshire, and was first used in the 10th and 11th centuries by the Anglo-Saxon Bishops of Ramsbury. In Saxon times, Ramsbury was an important location for the Church, and several early bishops became Archbishops of Canterbury.", "English", "Bangla")
     ]
-
+    
     for text, src, tgt in test_cases:
+        start_time = time.time()
         print(f"\n{'='*60}")
         print(f"Input: {text}")
         print(f"Direction: {src} → {tgt}")
@@ -246,3 +268,4 @@ if __name__ == "__main__":
         result = translate(text, src, tgt)
         print(f"Output: {result.translated_text}")
         print(f"JSON: {result.model_dump()}")
+        print(f"Time taken: {time.time() - start_time:.2f} seconds")

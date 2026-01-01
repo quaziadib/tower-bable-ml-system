@@ -1,5 +1,6 @@
 torch>=2.0.0
 transformers>=4.35.0
+peft>=0.7.0
 triton>=3.4.0
 accelerate>=0.20.0
 bitsandbytes>=0.41.0
@@ -10,3 +11,5 @@ json5>=0.9.14
 regex>=2023.8.8
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
+sacrebleu>=2.0.0
+requests>=2.31.0
