@@ -140,21 +140,62 @@ class TranslationModel:
         return generated_text.strip()
 
 # -------------------------------
-# MODEL LOADING WITH TRANSFORMERS
+# MODEL LOADING (TensorRT or PyTorch)
 # -------------------------------
-BASE_MODEL = "Babel-9B-Chat"
-ADAPTER_PATH = "final_model"  # QLoRA fine-tuned adapter
 
-print("Loading model with transformers...")
+# Toggle between TensorRT-LLM and PyTorch via environment variable
+USE_TENSORRT = os.getenv("USE_TENSORRT", "0") == "1"  # Default to PyTorch for safety
 
-# Load base model with PEFT adapter
-llm = TranslationModel(
-    model_name=BASE_MODEL,
-    device="cuda" if torch.cuda.is_available() else "cpu",
-    adapter_path=ADAPTER_PATH if os.path.exists(ADAPTER_PATH) else None
-)
+if USE_TENSORRT:
+    # TensorRT-LLM path (5-10x faster)
+    print("🚀 Using TensorRT-LLM for inference acceleration...")
 
-print("✓ Model loaded successfully!")
+    try:
+        from trt_model import TensorRTTranslationModel
+
+        # TensorRT configuration
+        ENGINE_DIR = os.path.join(os.path.dirname(__file__), "trt_engines", "babel-9b-int8")
+        TOKENIZER_DIR = os.path.join(os.path.dirname(__file__), "Babel-9B-Chat-Merged")
+
+        # Check if engine exists
+        if not os.path.exists(ENGINE_DIR):
+            print(f"❌ TensorRT engine not found at: {ENGINE_DIR}")
+            print("   Please run: python scripts/build_engine.py")
+            print("   Falling back to PyTorch...")
+            USE_TENSORRT = False
+        else:
+            llm = TensorRTTranslationModel(
+                engine_dir=ENGINE_DIR,
+                tokenizer_dir=TOKENIZER_DIR,
+                device="cuda"
+            )
+            print("✓ TensorRT-LLM model loaded successfully!")
+
+    except ImportError as e:
+        print(f"❌ TensorRT-LLM import failed: {e}")
+        print("   Install with: pip install tensorrt-llm --extra-index-url https://pypi.nvidia.com")
+        print("   Falling back to PyTorch...")
+        USE_TENSORRT = False
+    except Exception as e:
+        print(f"❌ TensorRT-LLM loading failed: {e}")
+        print("   Falling back to PyTorch...")
+        USE_TENSORRT = False
+
+if not USE_TENSORRT:
+    # PyTorch path (original implementation)
+    print("Loading model with PyTorch transformers...")
+
+    BASE_MODEL = "Babel-9B-Chat"
+    ADAPTER_PATH = "final_model"  # QLoRA fine-tuned adapter
+
+    # Load base model with PEFT adapter
+    llm = TranslationModel(
+        model_name=BASE_MODEL,
+        device="cuda" if torch.cuda.is_available() else "cpu",
+        adapter_path=ADAPTER_PATH if os.path.exists(ADAPTER_PATH) else None
+    )
+
+    print("✓ PyTorch model loaded successfully!")
 
 # -------------------------------
 # PROMPTS (FIXED ESCAPING)

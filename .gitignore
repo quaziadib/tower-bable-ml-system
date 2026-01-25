@@ -62,6 +62,17 @@ huggingface_cache/
 *.ckpt
 *.h5
 
+# TensorRT-LLM artifacts
+Babel-9B-Chat-Merged/
+trt_checkpoints/
+trt_engines/
+*.engine
+*.plan
+quality_validation.json
+benchmark_results.json
+trtllm_build.log
+tensorrt_llm*.log
+
 # Logs
 *.log
 logs/
