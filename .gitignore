@@ -26,7 +26,8 @@ Babel-9B-Chat/
 .claude/
 CLAUDE.md
 test.py
-
+Babel-9B-Chat-Merged/
+final_model/
 
 # Virtual Environment
 venv/
