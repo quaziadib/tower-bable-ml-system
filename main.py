@@ -127,7 +127,7 @@ class TranslationModel:
 # -------------------------------
 # MODEL LOADING WITH TRANSFORMERS
 # -------------------------------
-MODEL_NAME = "Babel-9B-Chat"
+MODEL_NAME = "Tower-Babel/Babel-9B-Chat"
 
 print("Loading model with transformers...")
 

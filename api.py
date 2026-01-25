@@ -9,18 +9,20 @@ from main import translate, TranslationOutput
 
 app = FastAPI(
     title="Translation API",
-    description="API for translating text between languages using SD-15 MT Model",
+    description="API for translating text between languages using Tower-Babel/Babel-9B-Chat model",
     version="1.0.0"
 )
 
 # Configure CORS - Allow all origins for public API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for public deployment
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 class TranslationRequest(BaseModel):
     text: str
